@@ -10,7 +10,7 @@ const JWT_EXPIRES_IN = '24h';
 
 async function login(email, password) {
     try {
-        console.log('Intento de login para:', email); // Debug
+        console.log('Intento de login para:', email);
         
         if (!email || !password) {
             throw new Error('Email y contraseña son requeridos');
@@ -18,7 +18,7 @@ async function login(email, password) {
 
         // Buscar usuario por email con su rol
         const query = `
-            SELECT u.id, u.nombre, u.email, u.password, u.activo, 
+            SELECT u.id, u.nombre, u.email, u.password, u.telefono, u.direccion, u.activo, 
                    r.nombre as rol_nombre, r.permisos 
             FROM usuarios u 
             LEFT JOIN roles r ON u.rol_id = r.id 
@@ -31,7 +31,7 @@ async function login(email, password) {
                     console.error('Error en query de usuario:', error);
                     return reject(error);
                 }
-                console.log('Resultados de búsqueda:', results.length); // Debug
+                console.log('Resultados de búsqueda:', results.length);
                 resolve(results[0]);
             });
         });
@@ -47,7 +47,7 @@ async function login(email, password) {
             throw new Error('Usuario inactivo. Contacte al administrador');
         }
 
-        // Verificar contraseña - MEJORADO
+        // Verificar contraseña
         let passwordValida = false;
         
         // Si la contraseña en BD comienza con $2b$, es un hash bcrypt
@@ -60,7 +60,7 @@ async function login(email, password) {
                 passwordValida = false;
             }
         } else {
-            // Comparación de texto plano (para compatibilidad)
+            // Comparación de texto plano (para compatibilidad con datos existentes)
             passwordValida = password === usuario.password;
             console.log('Verificación texto plano:', passwordValida);
         }
@@ -76,7 +76,7 @@ async function login(email, password) {
                 id: usuario.id,
                 email: usuario.email,
                 nombre: usuario.nombre,
-                rol: usuario.rol_nombre || 'cliente', // Default si no hay rol
+                rol: usuario.rol_nombre || 'cliente',
                 permisos: usuario.permisos ? JSON.parse(usuario.permisos) : {}
             },
             JWT_SECRET,
@@ -92,6 +92,8 @@ async function login(email, password) {
                 id: usuario.id,
                 nombre: usuario.nombre,
                 email: usuario.email,
+                telefono: usuario.telefono,
+                direccion: usuario.direccion,
                 rol: usuario.rol_nombre || 'cliente',
                 permisos: usuario.permisos ? JSON.parse(usuario.permisos) : {}
             }
@@ -107,6 +109,7 @@ async function register(data) {
     try {
         const { nombre, email, password, telefono, direccion } = data;
 
+        // Validaciones básicas
         if (!nombre || !email || !password) {
             throw new Error('Nombre, email y contraseña son requeridos');
         }
@@ -120,6 +123,11 @@ async function register(data) {
         // Validar longitud de contraseña
         if (password.length < 4) {
             throw new Error('La contraseña debe tener al menos 4 caracteres');
+        }
+
+        // Validar longitud del nombre
+        if (nombre.length < 2) {
+            throw new Error('El nombre debe tener al menos 2 caracteres');
         }
 
         // Verificar si el email ya existe
@@ -138,32 +146,52 @@ async function register(data) {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Crear nuevo usuario con rol de cliente (id 7)
+        // Crear nuevo usuario con rol de cliente (id 7 según la base de datos)
         const nuevoUsuario = {
-            nombre,
-            email,
+            nombre: nombre.trim(),
+            email: email.toLowerCase().trim(),
             password: hashedPassword,
-            telefono: telefono || null,
-            direccion: direccion || null,
+            telefono: telefono ? telefono.trim() : null,
+            direccion: direccion ? direccion.trim() : null,
             rol_id: 7, // Cliente por defecto
             activo: 1,
             created_at: new Date()
         };
 
+        console.log('Creando usuario:', { ...nuevoUsuario, password: '[HIDDEN]' });
+
         const resultado = await new Promise((resolve, reject) => {
             db.conexion.query('INSERT INTO usuarios SET ?', nuevoUsuario, (error, results) => {
-                if (error) return reject(error);
+                if (error) {
+                    console.error('Error al insertar usuario:', error);
+                    return reject(error);
+                }
                 resolve(results);
             });
         });
 
+        console.log('Usuario creado exitosamente con ID:', resultado.insertId);
+
         return {
             id: resultado.insertId,
-            mensaje: 'Usuario registrado exitosamente'
+            mensaje: 'Usuario registrado exitosamente',
+            usuario: {
+                id: resultado.insertId,
+                nombre: nuevoUsuario.nombre,
+                email: nuevoUsuario.email,
+                telefono: nuevoUsuario.telefono,
+                direccion: nuevoUsuario.direccion
+            }
         };
 
     } catch (error) {
         console.error('Error en register:', error);
+        
+        // Manejo específico de errores de MySQL
+        if (error.code === 'ER_DUP_ENTRY') {
+            throw new Error('El email ya está registrado');
+        }
+        
         throw error;
     }
 }
@@ -221,7 +249,7 @@ function verificarPermiso(recurso, accion) {
             next();
         } catch (error) {
             return res.status(403).json({
-            error: true,
+                error: true,
                 mensaje: 'Error al verificar permisos'
             });
         }
