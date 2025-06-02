@@ -1,7 +1,7 @@
 const express = require('express');
 const config = require('./config');
 
-const clientes = require('./modulos/clientes/rutas');
+const usuarios = require('./modulos/clientes/rutas'); // Reutilizamos el módulo
 
 const app = express();
 
@@ -12,7 +12,7 @@ app.set('port', config.app.port);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rutas
-app.use('/api/clientes', clientes);
+// Rutas - CAMBIO: /api/usuarios en lugar de /api/clientes
+app.use('/api/usuarios', usuarios);
 
 module.exports = app;
