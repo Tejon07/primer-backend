@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModaElegante - Carrito</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="./carrito.css">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header Mobile -->
+        <header class="header-mobile">
+            <a href="#" class="logo">
+                <i class="fas fa-tshirt"></i>HESED
+            </a>
+            <button class="open-menu" id="open-menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
+        
+        <!-- Sidebar -->
+        <aside id="sidebar">
+            <button class="close-menu" id="close-menu">
+                <i class="fas fa-times"></i>
+            </button>
+            <header>
+                <a href="#" class="logo">
+                    <i class="fas fa-tshirt"></i> HESED ModaElegante
+                </a>
+            </header>
+            <nav>
+                <ul>
+                    <li>
+                        <a class="boton-menu boton-volver" href="../index.html">
+                            <i class="fas fa-arrow-left"></i> Seguir comprando
+                        </a>
+                    </li>
+                    <li>
+                        <a class="boton-menu boton-carrito active" href="./carrito.html">
+                            <i class="fas fa-shopping-cart"></i> Carrito
+                        </a>
+                    </li>
+                    <li>
+                        <a class="boton-menu" href="#">
+                            <i class="fas fa-user"></i> Mi cuenta
+                        </a>
+                    </li>
+                    <li>
+                        <a class="boton-menu" href="#">
+                            <i class="fas fa-heart"></i> Favoritos
+                        </a>
+                    </li>
+                    <li>
+                        <a class="boton-menu" href="#">
+                            <i class="fas fa-history"></i> Historial
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <footer>
+                <p class="texto-footer">© 2025 HESED ModaElegante</p>
+            </footer>
+        </aside>
+        
+        <!-- Main Content -->
+        <main>
+            <h2 class="titulo-principal">Tu Carrito de Compras</h2>
+            <div class="contenedor-carrito">
+                <!-- Carrito vacío -->
+                <p id="carrito-vacio" class="carrito-vacio">Tu carrito está vacío. <i class="fas fa-frown"></i></p>
+                
+                <!-- Productos en carrito -->
+                <div id="carrito-productos" class="carrito-productos">
+                    <!-- Ejemplo de producto en carrito -->
+                    <div class="carrito-producto">
+                        <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=736&q=80" 
+                             alt="Abrigo de Lana" class="carrito-producto-imagen">
+                        <p class="carrito-producto-titulo">Abrigo de Lana</p>
+                        <div class="carrito-producto-cantidad">
+                            <button class="restar-cantidad">-</button>
+                            <span>1</span>
+                            <button class="sumar-cantidad">+</button>
+                        </div>
+                        <p class="carrito-producto-precio">200 bs</p>
+                        <button class="carrito-producto-eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="carrito-producto">
+                        <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" 
+                             alt="Vestido Elegante" class="carrito-producto-imagen">
+                        <p class="carrito-producto-titulo">Vestido Elegante</p>
+                        <div class="carrito-producto-cantidad">
+                            <button class="restar-cantidad">-</button>
+                            <span>2</span>
+                            <button class="sumar-cantidad">+</button>
+                        </div>
+                        <p class="carrito-producto-precio">310.90 bs</p>
+                        <button class="carrito-producto-eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Acciones del carrito -->
+                <div id="carrito-acciones" class="carrito-acciones">
+                    <div class="carrito-acciones-izquierda">
+                        <button id="carrito-acciones-vaciar" class="carrito-acciones-vaciar">
+                            <i class="fas fa-trash"></i> Vaciar carrito
+                        </button>
+                    </div>
+                    <div class="carrito-acciones-derecha">
+                        <div class="carrito-acciones-total">
+                            <p>Total:</p>
+                            <p id="total">510.90</p>
+                        </div>
+                        <button id="carrito-acciones-comprar" class="carrito-acciones-comprar">
+                            <i class="fas fa-credit-card"></i> Comprar ahora
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Mensaje de compra realizada -->
+                <p id="carrito-comprado" class="carrito-comprado disabled">
+                    ¡Gracias por tu compra! <i class="fas fa-smile"></i><br>
+                    Tu pedido está en proceso.
+                </p>
+            </div>
+        </main>
+    </div>
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="./carrito.js"></script>
+</body>
+</html>

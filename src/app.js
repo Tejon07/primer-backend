@@ -8,8 +8,14 @@ const config = require('./config');
 // Importar módulos
 const usuarios = require('./modulos/clientes/rutas');
 const auth = require('./modulos/auth/rutas');
+const products = require('./modulos/productos/rutas');
+const { testConnection } = require('../src/config');
+const productRoutes = require('./modulos/productos/rutas');
+const { errorHandler, notFound } = require('./modulos/errorHandler');
 
 const app = express();
+// Probar conexión a la base de datos
+testConnection();
 
 // Configuración
 app.set('port', config.app.port);
@@ -27,12 +33,22 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+
 // ✅ SERVIR ARCHIVOS ESTÁTICOS
 app.use(express.static(path.join(__dirname, '../public')));
 
 // ✅ RUTAS DE LA API
 app.use('/api/usuarios', usuarios);
 app.use('/api/auth', auth);
+app.use('/api/products', productRoutes);
 
 // ✅ RUTAS DE PÁGINAS CORREGIDAS
 // Ruta raíz - Login
@@ -42,8 +58,23 @@ app.get('/', (req, res) => {
 
 // Ruta de productos (página principal después del login)
 app.get('/productos', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/inicio productos/index.html'));
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 });
+
+// Ruta de salud del servidor
+app.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Servidor funcionando correctamente',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Middleware para rutas no encontradas
+app.use(notFound);
+
+// Middleware de manejo de errores
+app.use(errorHandler);
 
 // ✅ Ruta de dashboard (alias para productos)
 app.get('/dashboard', (req, res) => {

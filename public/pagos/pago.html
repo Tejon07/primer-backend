@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finalizar Compra | ModaElegante</title>
+  <link rel="stylesheet" href="./pago.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="checkout-header">
+    <div class="header-container">
+      <div class="logo">HESED</div>
+      <div class="secure-checkout">
+        <i class="fas fa-lock" style="color: var(--primary);"></i>
+        <span>Checkout seguro</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Menú flotante -->
+  <div class="menu-flotante">
+    <button id="menu-toggle">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div id="menu-content">
+      <a href="index.html"><i class="fas fa-home"></i> Inicio</a>
+      <a href="carrito.html"><i class="fas fa-shopping-cart"></i> Carrito</a>
+      <a href="cuenta.html"><i class="fas fa-user"></i> Mi cuenta</a>
+      <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
+    </div>
+  </div>
+
+  <div class="checkout-container">
+    <!-- Resumen del pedido -->
+    <div class="order-summary">
+      <h2>Resumen de tu pedido</h2>
+      
+      <div class="order-items">
+        <div class="order-item">
+          <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=736&q=80" 
+               alt="Abrigo de Lana" class="order-item-img">
+          <div class="order-item-details">
+            <h3 class="order-item-title">Abrigo de Lana</h3>
+            <p>Talla: M • Color: Beige</p>
+            <p>Cantidad: 1</p>
+            <p class="order-item-price">200 bs</p>
+          </div>
+        </div>
+        
+        <div class="order-item">
+          <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" 
+               alt="Vestido Elegante" class="order-item-img">
+          <div class="order-item-details">
+            <h3 class="order-item-title">Vestido Elegante</h3>
+            <p>Talla: S • Color: Azul</p>
+            <p>Cantidad: 2</p>
+            <p class="order-item-price">310.90 bs</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="order-totals">
+        <div class="order-total-row">
+          <span>Subtotal</span>
+          <span>510.90 bs</span>
+        </div>
+        <div class="order-total-row">
+          <span>Envío</span>
+          <span>20 bs</span>
+        </div>
+        <div class="order-total-row">
+          <span>Descuento</span>
+          <span style="color: var(--success);">-10.90 bs</span>
+        </div>
+        <div class="order-total-row">
+          <span>Total</span>
+          <span>520 bs</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Formulario de pago -->
+    <div class="payment-form">
+      <h2>Método de pago</h2>
+      
+      <div class="payment-methods">
+        <div class="payment-method active" id="credit-card-method">
+          <input type="radio" name="payment-method" checked>
+          <i class="fas fa-credit-card payment-method-icon"></i>
+          <div class="payment-method-details">
+            <h3 class="payment-method-title">Tarjeta de crédito/débito</h3>
+            <p class="payment-method-desc">Paga con Visa, Mastercard o American Express</p>
+          </div>
+        </div>
+        
+        <div class="payment-method" id="paypal-method">
+          <input type="radio" name="payment-method">
+          <i class="fab fa-paypal payment-method-icon"></i>
+          <div class="payment-method-details">
+            <h3 class="payment-method-title">PayPal</h3>
+            <p class="payment-method-desc">Paga de forma segura con tu cuenta PayPal</p>
+          </div>
+        </div>
+        
+        <div class="payment-method" id="qr-method">
+          <input type="radio" name="payment-method">
+          <i class="fas fa-qrcode payment-method-icon"></i>
+          <div class="payment-method-details">
+            <h3 class="payment-method-title">Pago con QR</h3>
+            <p class="payment-method-desc">Escanea el código QR con tu app bancaria</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Formulario de tarjeta (mostrado por defecto) -->
+      <div id="credit-card-form">
+        <div class="form-group">
+          <label for="card-number">Número de tarjeta</label>
+          <input type="text" id="card-number" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
+        </div>
+        
+        <div class="form-group">
+          <label for="card-name">Nombre en la tarjeta</label>
+          <input type="text" id="card-name" class="form-control" placeholder="Nombre Apellido">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="card-expiry">Fecha de expiración</label>
+            <input type="text" id="card-expiry" class="form-control" placeholder="MM/AA" maxlength="5">
+          </div>
+          
+          <div class="form-group">
+            <label for="card-cvv">CVV</label>
+            <input type="text" id="card-cvv" class="form-control" placeholder="123" maxlength="3">
+          </div>
+        </div>
+        
+        <button type="button" id="pay-now-btn" class="btn">
+          <i class="fas fa-lock"></i> Pagar $309.96
+        </button>
+      </div>
+      
+      <!-- Sección QR (oculta inicialmente) -->
+      <div class="qr-section" id="qr-section">
+        <h3>Escanea el código QR para pagar</h3>
+        <p>Usa la aplicación de tu banco para escanear el código</p>
+        
+        <div class="qr-code">
+          <i class="fas fa-qrcode"></i>
+        </div>
+        
+        <p>Total a pagar: <strong>$309.96</strong></p>
+        
+        <button type="button" id="simulate-qr-payment" class="btn" style="margin-top: 1rem;">
+          Simular pago completado
+        </button>
+      </div>
+      
+      <!-- Resultado del pago (oculto inicialmente) -->
+      <div class="payment-result" id="payment-result">
+        <div class="payment-success">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>¡Pago completado!</h2>
+        <p>Tu pedido #12345 ha sido procesado con éxito.</p>
+        <p>Recibirás un correo de confirmación shortly.</p>
+        <a href="../index.html" class="btn" style="margin-top: 2rem; background-color: var(--secondary); color: var(--dark);">
+          Volver a la tienda
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Menú flotante
+      const menuToggle = document.getElementById('menu-toggle');
+      const menuContent = document.getElementById('menu-content');
+      
+      menuToggle.addEventListener('click', function() {
+        menuContent.style.display = menuContent.style.display === 'block' ? 'none' : 'block';
+      });
+      
+      // Métodos de pago
+      const paymentMethods = document.querySelectorAll('.payment-method');
+      const creditCardForm = document.getElementById('credit-card-form');
+      const qrSection = document.getElementById('qr-section');
+      
+      paymentMethods.forEach(method => {
+        method.addEventListener('click', function() {
+          // Remover clase active de todos los métodos
+          paymentMethods.forEach(m => m.classList.remove('active'));
+          // Agregar clase active al método seleccionado
+          this.classList.add('active');
+          
+          // Mostrar el formulario correspondiente
+          if (this.id === 'credit-card-method' || this.id === 'paypal-method') {
+            creditCardForm.style.display = 'block';
+            qrSection.style.display = 'none';
+          } else if (this.id === 'qr-method') {
+            creditCardForm.style.display = 'none';
+            qrSection.style.display = 'block';
+          }
+        });
+      });
+      
+      // Formatear número de tarjeta
+      const cardNumber = document.getElementById('card-number');
+      cardNumber.addEventListener('input', function(e) {
+        let value = this.value.replace(/\s+/g, '');
+        if (e.inputType !== 'deleteContentBackward') {
+          value = value.replace(/(\d{4})/g, '$1 ').trim();
+        }
+        this.value = value;
+      });
+      
+      // Formatear fecha de expiración
+      const cardExpiry = document.getElementById('card-expiry');
+      cardExpiry.addEventListener('input', function(e) {
+        let value = this.value.replace(/\D/g, '');
+        if (e.inputType !== 'deleteContentBackward') {
+          if (value.length > 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+          }
+        }
+        this.value = value;
+      });
+      
+      // Simular pago
+      const payNowBtn = document.getElementById('pay-now-btn');
+      const simulateQrBtn = document.getElementById('simulate-qr-payment');
+      const paymentResult = document.getElementById('payment-result');
+      
+      function simulatePayment() {
+        // Ocultar todos los formularios
+        creditCardForm.style.display = 'none';
+        qrSection.style.display = 'none';
+        
+        // Mostrar resultado
+        paymentResult.style.display = 'block';
+        
+        // Desplazarse al resultado
+        paymentResult.scrollIntoView({ behavior: 'smooth' });
+      }
+      
+      payNowBtn.addEventListener('click', simulatePayment);
+      simulateQrBtn.addEventListener('click', simulatePayment);
+    });
+  </script>
+</body>
+</html>
