@@ -10,6 +10,8 @@ const JWT_EXPIRES_IN = '24h';
 
 async function login(email, password) {
     try {
+        console.log('Intento de login para:', email); // Debug
+        
         if (!email || !password) {
             throw new Error('Email y contraseña son requeridos');
         }
@@ -25,32 +27,46 @@ async function login(email, password) {
         
         const usuario = await new Promise((resolve, reject) => {
             db.conexion.query(query, [email], (error, results) => {
-                if (error) return reject(error);
+                if (error) {
+                    console.error('Error en query de usuario:', error);
+                    return reject(error);
+                }
+                console.log('Resultados de búsqueda:', results.length); // Debug
                 resolve(results[0]);
             });
         });
 
         if (!usuario) {
+            console.log('Usuario no encontrado para email:', email);
             throw new Error('Credenciales incorrectas');
         }
+
+        console.log('Usuario encontrado:', usuario.nombre, 'Activo:', usuario.activo);
 
         if (!usuario.activo) {
             throw new Error('Usuario inactivo. Contacte al administrador');
         }
 
-        // Verificar contraseña
-        // CAMBIO: Manejo mejorado de contraseñas hasheadas y texto plano
+        // Verificar contraseña - MEJORADO
         let passwordValida = false;
         
-        try {
-            // Intentar verificar como hash bcrypt
-            passwordValida = await bcrypt.compare(password, usuario.password);
-        } catch (error) {
-            // Si falla, comparar como texto plano (para compatibilidad)
+        // Si la contraseña en BD comienza con $2b$, es un hash bcrypt
+        if (usuario.password && usuario.password.startsWith('$2b$')) {
+            try {
+                passwordValida = await bcrypt.compare(password, usuario.password);
+                console.log('Verificación bcrypt:', passwordValida);
+            } catch (error) {
+                console.error('Error en bcrypt.compare:', error);
+                passwordValida = false;
+            }
+        } else {
+            // Comparación de texto plano (para compatibilidad)
             passwordValida = password === usuario.password;
+            console.log('Verificación texto plano:', passwordValida);
         }
         
         if (!passwordValida) {
+            console.log('Contraseña incorrecta para:', email);
             throw new Error('Credenciales incorrectas');
         }
 
@@ -60,12 +76,14 @@ async function login(email, password) {
                 id: usuario.id,
                 email: usuario.email,
                 nombre: usuario.nombre,
-                rol: usuario.rol_nombre,
+                rol: usuario.rol_nombre || 'cliente', // Default si no hay rol
                 permisos: usuario.permisos ? JSON.parse(usuario.permisos) : {}
             },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
+
+        console.log('Login exitoso para:', email, 'Rol:', usuario.rol_nombre);
 
         // Retornar datos del usuario sin la contraseña
         return {
@@ -74,13 +92,13 @@ async function login(email, password) {
                 id: usuario.id,
                 nombre: usuario.nombre,
                 email: usuario.email,
-                rol: usuario.rol_nombre,
+                rol: usuario.rol_nombre || 'cliente',
                 permisos: usuario.permisos ? JSON.parse(usuario.permisos) : {}
             }
         };
 
     } catch (error) {
-        console.error('Error en login:', error);
+        console.error('Error completo en login:', error);
         throw error;
     }
 }
@@ -203,7 +221,7 @@ function verificarPermiso(recurso, accion) {
             next();
         } catch (error) {
             return res.status(403).json({
-                error: true,
+            error: true,
                 mensaje: 'Error al verificar permisos'
             });
         }
