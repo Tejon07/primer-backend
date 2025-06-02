@@ -4,7 +4,7 @@ const config = require('./config');
 
 // Importar módulos
 const usuarios = require('./modulos/clientes/rutas');
-const auth = require('./modulos/auth/rutas'); // Nuevo módulo de autenticación
+const auth = require('./modulos/auth/rutas');
 
 const app = express();
 
@@ -20,19 +20,30 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // Rutas de la API
 app.use('/api/usuarios', usuarios);
-app.use('/api/auth', auth); // Rutas de autenticación
+app.use('/api/auth', auth);
 
 // Ruta raíz - servir la página de login
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/login.html'));
 });
 
-// Manejo de errores 404
+// Ruta para páginas específicas (opcional)
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Manejo de errores 404 - IMPORTANTE: esto debe ir al final
 app.use((req, res) => {
-    res.status(404).json({
-        error: true,
-        mensaje: 'Ruta no encontrada'
-    });
+    // Si es una petición a la API, devolver JSON
+    if (req.path.startsWith('/api/')) {
+        res.status(404).json({
+            error: true,
+            mensaje: 'Ruta de API no encontrada'
+        });
+    } else {
+        // Si es una página, redirigir al login
+        res.redirect('/');
+    }
 });
 
 module.exports = app;
