@@ -1,5 +1,5 @@
-const { pool } = require('../config');
-const { createTables } = require('../DB/createTables');
+const { pool } = require('../../config');
+const { createTables } = require('../../DB/createTables');
 
 const sampleProducts = [
   {
@@ -66,22 +66,6 @@ const sampleProducts = [
     description: 'Reloj clásico elegante con acabado dorado y mecanismo de precisión.',
     stock: 3
   },
-  {
-    name: 'Cinturón de Cuero',
-    price: 75.00,
-    category: 'accesorios',
-    image: '12.jpg',
-    description: 'Cinturón de cuero genuino con hebilla metálica.',
-    stock: 15
-  },
-  {
-    name: 'Bufanda de Lana',
-    price: 45.00,
-    category: 'accesorios',
-    image: '12.jpg',
-    description: 'Bufanda suave de lana natural para el invierno.',
-    stock: 25
-  }
 ];
 
 const seedProducts = async () => {

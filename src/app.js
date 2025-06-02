@@ -1,4 +1,4 @@
-// app.js - Versión corregida
+// app.js - Versión corregida y limpia
 
 const express = require('express');
 const path = require('path');
@@ -8,21 +8,22 @@ const config = require('./config');
 // Importar módulos
 const usuarios = require('./modulos/clientes/rutas');
 const auth = require('./modulos/auth/rutas');
-const products = require('./modulos/productos/rutas');
-const { testConnection } = require('./config');
 const productRoutes = require('./modulos/productos/rutas');
-const { errorHandler, notFound } = require('./modulos/productos/errorHandler');
+const { testConnection } = require('./config');
 
 const app = express();
-// Probar conexión a la base de datos
-testConnection();
+
 
 // Configuración
 app.set('port', config.app.port);
 
-// ✅ MIDDLEWARES MEJORADOS
-app.use(cors()); // Habilitar CORS
-app.use(express.json({ limit: '10mb' })); // Límite para uploads
+// ✅ MIDDLEWARES
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Middleware de logging para desarrollo
@@ -33,15 +34,6 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  credentials: true
-}));
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-
 // ✅ SERVIR ARCHIVOS ESTÁTICOS
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -50,7 +42,7 @@ app.use('/api/usuarios', usuarios);
 app.use('/api/auth', auth);
 app.use('/api/products', productRoutes);
 
-// ✅ RUTAS DE PÁGINAS CORREGIDAS
+// ✅ RUTAS DE PÁGINAS
 // Ruta raíz - Login
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/login/login.html'));
@@ -61,6 +53,11 @@ app.get('/productos', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
+// ✅ Ruta de dashboard (alias para productos)
+app.get('/dashboard', (req, res) => {
+    res.redirect('/productos');
+});
+
 // Ruta de salud del servidor
 app.get('/health', (req, res) => {
   res.json({
@@ -68,15 +65,6 @@ app.get('/health', (req, res) => {
     message: 'Servidor funcionando correctamente',
     timestamp: new Date().toISOString()
   });
-});
-
-// Middleware para rutas no encontradas
-app.use(notFound);
-
-
-// ✅ Ruta de dashboard (alias para productos)
-app.get('/dashboard', (req, res) => {
-    res.redirect('/productos');
 });
 
 // ✅ MIDDLEWARE DE AUTENTICACIÓN PARA RUTAS PROTEGIDAS
@@ -129,7 +117,7 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// ✅ MANEJO DE ERRORES MEJORADO
+// ✅ MANEJO DE ERRORES
 // Middleware para rutas no encontradas
 app.use((req, res, next) => {
     const error = new Error(`Ruta no encontrada: ${req.originalUrl}`);
