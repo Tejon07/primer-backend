@@ -1,114 +1,205 @@
-// login.js
+// login.js - Versión corregida
 
-// Esperamos a que el DOM se cargue completamente
 document.addEventListener('DOMContentLoaded', () => {
-    // Seleccionamos los elementos del DOM necesarios
     const container = document.querySelector('.container');
     const loginForm = document.querySelector('.form-box.login form');
     const registerForm = document.querySelector('.form-box.register form');
     const loginBtn = document.querySelector('.login-btn');
     const registerBtn = document.querySelector('.register-btn');
 
-    // ----------------------------------------
-    // Funcionalidad para alternar vistas (login / registro)
-    // ----------------------------------------
+    // Alternar vistas
     registerBtn.addEventListener('click', () => {
-        // Agrega una clase al contenedor para mostrar la vista de registro
         container.classList.add('active');
     });
 
     loginBtn.addEventListener('click', () => {
-        // Quita la clase para volver a la vista de login
         container.classList.remove('active');
     });
 
-    // ----------------------------------------
-    // Funcionalidad para enviar el formulario de inicio de sesión
-    // ----------------------------------------
+    // ✅ CORRECCIÓN: Rutas de API corregidas
+    // Login
     loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Evita que el formulario se envíe normalmente
+        e.preventDefault();
 
-        // Obtenemos los valores ingresados por el usuario
         const username = loginForm.querySelector('input[type="text"]').value.trim();
         const password = loginForm.querySelector('input[type="password"]').value.trim();
 
-        // Validaciones básicas
         if (!username || !password) {
-            alert('Por favor, completa todos los campos para iniciar sesión.');
+            showMessage('Por favor, completa todos los campos para iniciar sesión.', 'error');
             return;
         }
 
         try {
-            // Realizamos una petición POST al endpoint de login
-            const response = await fetch('/auth/login', {
+            // ✅ Ruta corregida: /api/auth/login
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ 
+                    email: username, // El backend espera 'email'
+                    password: password 
+                })
             });
 
             const data = await response.json();
 
-            if (response.ok) {
-                // Si el login fue exitoso, por ejemplo, redirigimos al usuario
-                // o guardamos el token que retorne el backend en el localStorage/sessionStorage.
-                // Suponiendo que el backend devuelve { token: '...', user: { ... } }
-                localStorage.setItem('token', data.token);
-                // Redirige a la página principal o dashboard
-                window.location.href = '/dashboard';
+            if (response.ok && !data.error) {
+                // ✅ Estructura de respuesta corregida
+                const { token, usuario } = data.body.data;
+                
+                // Guardar token (sin localStorage por restricciones de Claude)
+                sessionStorage.setItem('token', token);
+                sessionStorage.setItem('usuario', JSON.stringify(usuario));
+                
+                showMessage('¡Login exitoso! Redirigiendo...', 'success');
+                
+                // ✅ Redirigir a la página de productos
+                setTimeout(() => {
+                    window.location.href = '/productos';
+                }, 1500);
             } else {
-                // Si hubo un error (credenciales inválidas, usuario no encontrado, etc.)
-                alert(data.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+                showMessage(data.body || 'Error al iniciar sesión. Verifica tus credenciales.', 'error');
             }
         } catch (error) {
-            console.error('Error en la petición de inicio de sesión:', error);
-            alert('Ocurrió un problema al conectar con el servidor. Intenta de nuevo más tarde.');
+            console.error('Error en login:', error);
+            showMessage('Error de conexión. Intenta de nuevo más tarde.', 'error');
         }
     });
 
-    // ----------------------------------------
-    // Funcionalidad para enviar el formulario de registro
-    // ----------------------------------------
+    // Registro
     registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Evita el envío normal
+        e.preventDefault();
 
-        // Obtenemos los valores ingresados por el usuario
         const username = registerForm.querySelector('input[placeholder="Nombre de usuario"]').value.trim();
         const email = registerForm.querySelector('input[type="email"]').value.trim();
         const password = registerForm.querySelector('input[type="password"]').value.trim();
 
-        // Validaciones básicas
         if (!username || !email || !password) {
-            alert('Por favor, completa todos los campos para registrarte.');
+            showMessage('Por favor, completa todos los campos para registrarte.', 'error');
+            return;
+        }
+
+        // ✅ Validaciones adicionales
+        if (password.length < 6) {
+            showMessage('La contraseña debe tener al menos 6 caracteres.', 'error');
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            showMessage('Por favor, ingresa un email válido.', 'error');
             return;
         }
 
         try {
-            // Realizamos una petición POST al endpoint de registro
-            const response = await fetch('/auth/register', {
+            // ✅ Ruta corregida: /api/auth/register
+            const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, email, password })
+                body: JSON.stringify({ 
+                    nombre: username,
+                    email: email, 
+                    password: password 
+                })
             });
 
             const data = await response.json();
 
-            if (response.ok) {
-                // Si el registro fue exitoso, mostramos un mensaje y regresamos a la vista de login
-                alert('Registro exitoso. Ahora puedes iniciar sesión con tus credenciales.');
+            if (response.ok && !data.error) {
+                showMessage('¡Registro exitoso! Ya puedes iniciar sesión.', 'success');
                 container.classList.remove('active');
-                // O bien, redirigir directamente al login si se desea:
-                // window.location.href = '/login';
+                
+                // Limpiar formulario
+                registerForm.reset();
             } else {
-                // Si hubo un error (usuario ya existe, validación fallida, etc.)
-                alert(data.message || 'Error al registrarse. Verifica tus datos e intenta de nuevo.');
+                showMessage(data.body || 'Error al registrarse. Verifica tus datos.', 'error');
             }
         } catch (error) {
-            console.error('Error en la petición de registro:', error);
-            alert('Ocurrió un problema al conectar con el servidor. Intenta de nuevo más tarde.');
+            console.error('Error en registro:', error);
+            showMessage('Error de conexión. Intenta de nuevo más tarde.', 'error');
         }
     });
+
+    // ✅ NUEVAS FUNCIONES DE UTILIDAD
+    function showMessage(message, type = 'info') {
+        // Crear elemento de mensaje
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message message-${type}`;
+        messageDiv.textContent = message;
+        
+        // Estilos del mensaje
+        messageDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+            word-wrap: break-word;
+        `;
+        
+        // Colores según tipo
+        switch(type) {
+            case 'success':
+                messageDiv.style.backgroundColor = '#10b981';
+                break;
+            case 'error':
+                messageDiv.style.backgroundColor = '#ef4444';
+                break;
+            default:
+                messageDiv.style.backgroundColor = '#3b82f6';
+        }
+        
+        document.body.appendChild(messageDiv);
+        
+        // Animar entrada
+        setTimeout(() => {
+            messageDiv.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Remover después de 4 segundos
+        setTimeout(() => {
+            messageDiv.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 300);
+        }, 4000);
+    }
+
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // ✅ Verificar si ya está logueado
+    const token = sessionStorage.getItem('token');
+    if (token) {
+        // Verificar si el token es válido
+        fetch('/api/auth/verify', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.error) {
+                // Usuario ya logueado, redirigir
+                window.location.href = '/productos';
+            }
+        })
+        .catch(() => {
+            // Token inválido, limpiar storage
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('usuario');
+        });
+    }
 });
