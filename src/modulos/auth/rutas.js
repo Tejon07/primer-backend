@@ -79,5 +79,43 @@ router.get('/profile', controlador.autenticar, async function (req, res) {
         respuesta.error(req, res, error.message, 500);
     }
 });
+// Agrega esta función a tu archivo de rutas para hacer debug
+async function loginHandler(req, res) {
+    try {
+        console.log('=== DEBUG LOGIN ===');
+        console.log('Headers recibidos:', req.headers);
+        console.log('Body recibido:', req.body);
+        console.log('URL:', req.url);
+        console.log('Método:', req.method);
+        
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            console.log('Error: Email o password faltante');
+            return res.status(400).json({
+                error: true,
+                mensaje: 'Email y contraseña son requeridos'
+            });
+        }
+        
+        console.log('Intentando login para:', email);
+        const resultado = await auth.login(email, password);
+        
+        console.log('Login exitoso');
+        res.json({
+            error: false,
+            data: resultado,
+            mensaje: 'Login exitoso'
+        });
+        
+    } catch (error) {
+        console.log('Error en login:', error.message);
+        res.status(400).json({
+            error: true,
+            mensaje: error.message
+        });
+    }
+}
+
 
 module.exports = router;

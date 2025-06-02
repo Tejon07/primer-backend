@@ -49,12 +49,23 @@ async function login(email, password) {
             throw new Error(`Demasiados intentos fallidos. Intente nuevamente en ${tiempoRestante} minutos`);
         }
 
-        // Buscar usuario por email con su rol usando la función query del módulo mysql
+        // Usar la consulta SQL que funciona correctamente
         const query = `
-            SELECT u.id, u.nombre, u.email, u.password, u.telefono, u.direccion, u.activo, 
-                   r.nombre as rol_nombre, r.permisos 
-            FROM usuarios u 
-            LEFT JOIN roles r ON u.rol_id = r.id 
+            SELECT 
+                u.id AS usuario_id,
+                u.nombre,
+                u.email,
+                u.password,
+                u.telefono,
+                u.direccion,
+                u.activo,
+                r.id AS rol_id,
+                r.nombre AS rol_nombre,
+                r.permisos
+            FROM 
+                usuarios u
+            LEFT JOIN 
+                roles r ON u.rol_id = r.id
             WHERE u.email = ? AND u.activo = 1
         `;
         
@@ -65,34 +76,41 @@ async function login(email, password) {
             // Registrar intento fallido
             registrarIntentoFallido(emailNormalizado);
             console.log('Usuario no encontrado o inactivo para email:', emailNormalizado);
+            
+            // DEBUGGING: Verificar si existe el usuario pero está inactivo
+            const usuarioInactivo = await db.query('SELECT id, activo FROM usuarios WHERE email = ?', [emailNormalizado]);
+            if (usuarioInactivo.length > 0) {
+                console.log('Usuario existe pero está inactivo:', usuarioInactivo[0]);
+            } else {
+                console.log('Usuario no existe en la base de datos');
+            }
+            
             throw new Error('Credenciales incorrectas');
         }
 
-        console.log('Usuario encontrado:', usuario.nombre, 'Activo:', usuario.activo);
+        console.log('Usuario encontrado:', {
+            usuario_id: usuario.usuario_id,
+            nombre: usuario.nombre,
+            email: usuario.email,
+            activo: usuario.activo,
+            rol_id: usuario.rol_id,
+            rol_nombre: usuario.rol_nombre,
+            tienePassword: !!usuario.password
+        });
 
-        // Verificar contraseña
+        // VERIFICACIÓN DE CONTRASEÑA SIN ENCRIPTACIÓN
         let passwordValida = false;
         
-        try {
-            // Si la contraseña en BD comienza con $2b$, es un hash bcrypt
-            if (usuario.password && usuario.password.startsWith('$2b$')) {
-                passwordValida = await bcrypt.compare(password, usuario.password);
-                console.log('Verificación bcrypt completada');
-            } else {
-                // Comparación de texto plano (para compatibilidad temporal)
-                // NOTA: En producción, todas las contraseñas deberían estar hasheadas
-                passwordValida = password === usuario.password;
-                console.log('Verificación texto plano (DEPRECADO)');
-                
-                // Opcional: Actualizar contraseña a hash si es válida
-                if (passwordValida) {
-                    await actualizarPasswordAHash(usuario.id, password);
-                }
-            }
-        } catch (error) {
-            console.error('Error en verificación de contraseña:', error);
-            passwordValida = false;
+        if (!usuario.password) {
+            console.error('Usuario sin contraseña en BD');
+            registrarIntentoFallido(emailNormalizado);
+            throw new Error('Error de configuración de usuario');
         }
+        
+        // Comparación directa de texto plano
+        console.log('Verificando contraseña en texto plano...');
+        passwordValida = password === usuario.password;
+        console.log('Resultado verificación:', passwordValida);
         
         if (!passwordValida) {
             registrarIntentoFallido(emailNormalizado);
@@ -102,24 +120,30 @@ async function login(email, password) {
 
         // Login exitoso - limpiar intentos fallidos
         intentosLogin.delete(emailNormalizado);
+        console.log('Contraseña válida, procediendo con login...');
 
-        // Preparar permisos
+        // OBTENER ROL Y PERMISOS DIRECTAMENTE DE LA CONSULTA
+        let rolNombre = usuario.rol_nombre || 'cliente';
         let permisos = {};
-        try {
-            if (usuario.permisos) {
+
+        // Si hay permisos en el resultado, parsearlos
+        if (usuario.permisos) {
+            try {
                 permisos = JSON.parse(usuario.permisos);
+            } catch (parseError) {
+                console.error('Error al parsear permisos:', parseError);
+                permisos = {};
             }
-        } catch (error) {
-            console.error('Error al parsear permisos:', error);
-            permisos = {};
         }
+
+        console.log('Rol obtenido:', rolNombre, 'Permisos:', Object.keys(permisos));
 
         // Generar token JWT
         const tokenPayload = {
-            id: usuario.id,
+            id: usuario.usuario_id,
             email: usuario.email,
             nombre: usuario.nombre,
-            rol: usuario.rol_nombre || 'cliente',
+            rol: rolNombre,
             permisos: permisos
         };
 
@@ -129,21 +153,26 @@ async function login(email, password) {
             audience: 'ecommerce-users'
         });
 
-        console.log('Login exitoso para:', emailNormalizado, 'Rol:', usuario.rol_nombre);
+        console.log('Token generado exitosamente para:', emailNormalizado, 'Rol:', rolNombre);
 
-        // Registrar último login (opcional)
-        await db.query('UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?', [usuario.id]);
+        // Registrar último login
+        try {
+            await db.query('UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?', [usuario.usuario_id]);
+        } catch (updateError) {
+            console.error('Error al actualizar último login:', updateError);
+            // No es crítico, continuar
+        }
 
         // Retornar datos del usuario sin la contraseña
         return {
             token,
             usuario: {
-                id: usuario.id,
+                id: usuario.usuario_id,
                 nombre: usuario.nombre,
                 email: usuario.email,
                 telefono: usuario.telefono,
                 direccion: usuario.direccion,
-                rol: usuario.rol_nombre || 'cliente',
+                rol: rolNombre,
                 permisos: permisos
             }
         };
@@ -159,11 +188,12 @@ function registrarIntentoFallido(email) {
     intentos.count++;
     intentos.ultimoIntento = Date.now();
     intentosLogin.set(email, intentos);
+    console.log(`Intento fallido registrado para ${email}. Total: ${intentos.count}`);
 }
 
 async function actualizarPasswordAHash(userId, password) {
     try {
-        const saltRounds = 12; // Incrementado para mayor seguridad
+        const saltRounds = 12;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         await db.query('UPDATE usuarios SET password = ? WHERE id = ?', [hashedPassword, userId]);
         console.log('Contraseña actualizada a hash para usuario ID:', userId);
@@ -220,7 +250,7 @@ async function register(data) {
         const nuevoUsuario = {
             nombre: nombre.trim(),
             email: emailNormalizado,
-            password: hashedPassword,
+            password: password,
             telefono: telefono ? telefono.trim() : null,
             direccion: direccion ? direccion.trim() : null,
             rol_id: 7, // Cliente por defecto - considerar hacer esto configurable
