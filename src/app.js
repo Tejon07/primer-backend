@@ -9,9 +9,9 @@ const config = require('./config');
 const usuarios = require('./modulos/clientes/rutas');
 const auth = require('./modulos/auth/rutas');
 const products = require('./modulos/productos/rutas');
-const { testConnection } = require('../src/config');
+const { testConnection } = require('./config');
 const productRoutes = require('./modulos/productos/rutas');
-const { errorHandler, notFound } = require('./modulos/errorHandler');
+const { errorHandler, notFound } = require('./modulos/productos/errorHandler');
 
 const app = express();
 // Probar conexión a la base de datos
@@ -73,8 +73,6 @@ app.get('/health', (req, res) => {
 // Middleware para rutas no encontradas
 app.use(notFound);
 
-// Middleware de manejo de errores
-app.use(errorHandler);
 
 // ✅ Ruta de dashboard (alias para productos)
 app.get('/dashboard', (req, res) => {

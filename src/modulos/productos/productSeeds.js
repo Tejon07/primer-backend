@@ -6,7 +6,7 @@ const sampleProducts = [
     name: 'Abrigo Largo Elegante',
     price: 140.00,
     category: 'abrigos',
-    image: '12.jpg',
+    image: '../../../imagenes para tienda/1.jpeg',
     description: 'Abrigo largo elegante para el invierno, confeccionado con materiales de alta calidad.',
     stock: 10
   },
@@ -14,7 +14,7 @@ const sampleProducts = [
     name: 'Chaqueta de Cuero Premium',
     price: 210.00,
     category: 'abrigos',
-    image: '12.jpg',
+    image: '../../../imagenes para tienda/2.jpeg',
     description: 'Chaqueta de cuero genuino con estilo clásico y moderno.',
     stock: 5
   },
@@ -22,7 +22,7 @@ const sampleProducts = [
     name: 'Abrigo Deportivo',
     price: 95.00,
     category: 'abrigos',
-    image: '12.jpg',
+    image: '../../../imagenes para tienda/3.jpeg',
     description: 'Abrigo deportivo cómodo y funcional.',
     stock: 8
   },
@@ -38,7 +38,7 @@ const sampleProducts = [
     name: 'Pantalón Deportivo Pro',
     price: 100.00,
     category: 'pantalones',
-    image: '13.jpg',
+    image: '../../../imagenes para tienda/4.jpeg',
     description: 'Pantalón deportivo de alta tecnología para máximo rendimiento.',
     stock: 12
   },
@@ -46,7 +46,7 @@ const sampleProducts = [
     name: 'Pantalón Formal',
     price: 150.00,
     category: 'pantalones',
-    image: '13.jpg',
+    image: '../../../imagenes para tienda/4.jpeg',
     description: 'Pantalón formal elegante para ocasiones especiales.',
     stock: 7
   },
