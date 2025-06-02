@@ -46,13 +46,13 @@ function todos(tabla) {
     });
 }
 
-// CAMBIO IMPORTANTE: Usar id_usuario en lugar de id
+// CORREGIDO: Usar 'id' estándar como en tu base de datos
 function uno(tabla, id) {
     return new Promise((resolve, reject) => {
         if (!conexion) {
             return reject(new Error('No hay conexión a la base de datos'));
         }
-        conexion.query('SELECT * FROM ?? WHERE id_usuario = ?', [tabla, id], (error, results) => {
+        conexion.query('SELECT * FROM ?? WHERE id = ?', [tabla, id], (error, results) => {
             if (error) return reject(error);
             resolve(results[0]);
         });
@@ -71,13 +71,26 @@ function agregar(tabla, data) {
     });
 }
 
-// CAMBIO IMPORTANTE: Usar id_usuario en lugar de id
+// CORREGIDO: Usar 'id' estándar como en tu base de datos
 function eliminar(tabla, id) {
     return new Promise((resolve, reject) => {
         if (!conexion) {
             return reject(new Error('No hay conexión a la base de datos'));
         }
-        conexion.query('DELETE FROM ?? WHERE id_usuario = ?', [tabla, id], (error, results) => {
+        conexion.query('DELETE FROM ?? WHERE id = ?', [tabla, id], (error, results) => {
+            if (error) return reject(error);
+            resolve(results);
+        });
+    });
+}
+
+// NUEVO: Función para consultas personalizadas
+function query(sql, params = []) {
+    return new Promise((resolve, reject) => {
+        if (!conexion) {
+            return reject(new Error('No hay conexión a la base de datos'));
+        }
+        conexion.query(sql, params, (error, results) => {
             if (error) return reject(error);
             resolve(results);
         });
@@ -89,4 +102,6 @@ module.exports = {
     uno,
     agregar,
     eliminar,
-}
+    query,
+    conexion // Exportar conexión para el módulo de login
+};
