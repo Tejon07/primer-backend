@@ -31,20 +31,43 @@ conexion.on('error', err => {
     }
 })
 
-function todos (tabla){
-    return prueba; 
+// Inicializar conexión
+conMysql();
+
+function todos(tabla) {
+    return new Promise((resolve, reject) => {
+        conexion.query('SELECT * FROM ??', [tabla], (error, results) => {
+            if (error) return reject(error);
+            resolve(results);
+        });
+    });
 }
 
-function uno (tabla, id){
-
+function uno(tabla, id) {
+    return new Promise((resolve, reject) => {
+        conexion.query('SELECT * FROM ?? WHERE id = ?', [tabla, id], (error, results) => {
+            if (error) return reject(error);
+            resolve(results[0]);
+        });
+    });
 }
 
-function agregar (tabla, data){
-
+function agregar(tabla, data) {
+    return new Promise((resolve, reject) => {
+        conexion.query('INSERT INTO ?? SET ?', [tabla, data], (error, results) => {
+            if (error) return reject(error);
+            resolve(results);
+        });
+    });
 }
 
-function eliminar (tabla, id){
-
+function eliminar(tabla, id) {
+    return new Promise((resolve, reject) => {
+        conexion.query('DELETE FROM ?? WHERE id = ?', [tabla, id], (error, results) => {
+            if (error) return reject(error);
+            resolve(results);
+        });
+    });
 }
 
 module.exports = {

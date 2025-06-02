@@ -5,10 +5,14 @@ const clientes = require('./modulos/clientes/rutas');
 
 const app = express();
 
-//configuracion
-app.set('port', config.app.port)
+// Configuración
+app.set('port', config.app.port);
 
-//rutas
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Rutas
 app.use('/api/clientes', clientes);
 
 module.exports = app;
