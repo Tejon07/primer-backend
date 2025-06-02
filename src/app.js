@@ -24,7 +24,7 @@ app.use('/api/auth', auth);
 
 // Ruta raíz - servir la página de login
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/login.html'));
+    res.sendFile(path.join(__dirname, '../public/login/login.html'));
 });
 
 // Ruta para páginas específicas (opcional)
