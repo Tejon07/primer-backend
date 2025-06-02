@@ -8,6 +8,6 @@ module.exports = {
         host: process.env.MYSQL_HOST || 'localhost',
         user: process.env.MYSQL_USER || 'admin',
         password: process.env.MYSQL_PASSWORD || '1234',
-        database: process.env.MYSQL_DB || 'tienda_db',
+        database: process.env.MYSQL_DB || 'ecommerce_db',
     }
 }

@@ -125,20 +125,24 @@ loginForm.addEventListener('submit', async function(e) {
     const submitBtn = this.querySelector('.btn');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Iniciando sesión...';
+    submitBtn.disabled = true;
     this.classList.add('form-loading');
     
     try {
         const response = await apiRequest('/login', 'POST', { email, password });
         
-        // Guardar token en localStorage
-        localStorage.setItem('token', response.body.data.token);
-        localStorage.setItem('usuario', JSON.stringify(response.body.data.usuario));
+        // PROBLEMA CORREGIDO: Acceder correctamente a los datos
+        const { token, usuario } = response.body.data;
+        
+        // Guardar en localStorage (aunque no es la mejor práctica de seguridad)
+        // En producción considera usar httpOnly cookies
+        localStorage.setItem('token', token);
+        localStorage.setItem('usuario', JSON.stringify(usuario));
         
         mostrarMensaje('¡Login exitoso! Redirigiendo...', 'success');
         
         // Redireccionar según el rol
         setTimeout(() => {
-            const usuario = response.body.data.usuario;
             switch(usuario.rol) {
                 case 'master':
                 case 'admin':
@@ -147,6 +151,7 @@ loginForm.addEventListener('submit', async function(e) {
                 case 'entregador':
                     window.location.href = '/delivery/dashboard.html';
                     break;
+                case 'cliente':
                 default:
                     window.location.href = '/tienda/index.html';
             }
@@ -157,6 +162,7 @@ loginForm.addEventListener('submit', async function(e) {
     } finally {
         // Restaurar estado del botón
         submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
         this.classList.remove('form-loading');
     }
 });
@@ -191,6 +197,7 @@ registerForm.addEventListener('submit', async function(e) {
     const submitBtn = this.querySelector('.btn');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Registrando...';
+    submitBtn.disabled = true;
     this.classList.add('form-loading');
     
     try {
@@ -215,6 +222,7 @@ registerForm.addEventListener('submit', async function(e) {
     } finally {
         // Restaurar estado del botón
         submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
         this.classList.remove('form-loading');
     }
 });
@@ -244,6 +252,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     case 'entregador':
                         window.location.href = '/delivery/dashboard.html';
                         break;
+                    case 'cliente':
                     default:
                         window.location.href = '/tienda/index.html';
                 }

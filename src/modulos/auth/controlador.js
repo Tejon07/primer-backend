@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const TABLA = 'usuarios';
 
 // Configuración JWT
-const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_muy_segura';
+const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_muy_segura_cambiar_en_produccion';
 const JWT_EXPIRES_IN = '24h';
 
 async function login(email, password) {
@@ -39,9 +39,16 @@ async function login(email, password) {
         }
 
         // Verificar contraseña
-        // Nota: En tu DB actual las contraseñas están en texto plano
-        // Te recomiendo hashearlas, pero por ahora verifico directamente
-        const passwordValida = password === usuario.password;
+        // CAMBIO: Manejo mejorado de contraseñas hasheadas y texto plano
+        let passwordValida = false;
+        
+        try {
+            // Intentar verificar como hash bcrypt
+            passwordValida = await bcrypt.compare(password, usuario.password);
+        } catch (error) {
+            // Si falla, comparar como texto plano (para compatibilidad)
+            passwordValida = password === usuario.password;
+        }
         
         if (!passwordValida) {
             throw new Error('Credenciales incorrectas');
@@ -54,7 +61,7 @@ async function login(email, password) {
                 email: usuario.email,
                 nombre: usuario.nombre,
                 rol: usuario.rol_nombre,
-                permisos: usuario.permisos
+                permisos: usuario.permisos ? JSON.parse(usuario.permisos) : {}
             },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
@@ -68,7 +75,7 @@ async function login(email, password) {
                 nombre: usuario.nombre,
                 email: usuario.email,
                 rol: usuario.rol_nombre,
-                permisos: usuario.permisos
+                permisos: usuario.permisos ? JSON.parse(usuario.permisos) : {}
             }
         };
 
@@ -86,6 +93,17 @@ async function register(data) {
             throw new Error('Nombre, email y contraseña son requeridos');
         }
 
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            throw new Error('Formato de email inválido');
+        }
+
+        // Validar longitud de contraseña
+        if (password.length < 4) {
+            throw new Error('La contraseña debe tener al menos 4 caracteres');
+        }
+
         // Verificar si el email ya existe
         const usuarioExistente = await new Promise((resolve, reject) => {
             db.conexion.query('SELECT id FROM usuarios WHERE email = ?', [email], (error, results) => {
@@ -98,11 +116,15 @@ async function register(data) {
             throw new Error('El email ya está registrado');
         }
 
+        // Hashear contraseña
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
         // Crear nuevo usuario con rol de cliente (id 7)
         const nuevoUsuario = {
             nombre,
             email,
-            password, // En producción, hashear con bcrypt
+            password: hashedPassword,
             telefono: telefono || null,
             direccion: direccion || null,
             rol_id: 7, // Cliente por defecto
@@ -139,15 +161,16 @@ function verificarToken(token) {
 // Middleware para verificar autenticación
 function autenticar(req, res, next) {
     try {
-        const token = req.headers.authorization?.split(' ')[1]; // Bearer TOKEN
+        const authHeader = req.headers.authorization;
         
-        if (!token) {
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return res.status(401).json({
                 error: true,
-                mensaje: 'Token no proporcionado'
+                mensaje: 'Token no proporcionado o formato incorrecto'
             });
         }
 
+        const token = authHeader.split(' ')[1];
         const decoded = verificarToken(token);
         req.usuario = decoded;
         next();
@@ -163,7 +186,12 @@ function autenticar(req, res, next) {
 function verificarPermiso(recurso, accion) {
     return (req, res, next) => {
         try {
-            const { permisos } = req.usuario;
+            const { permisos, rol } = req.usuario;
+            
+            // Si es admin o master, permitir todo
+            if (rol === 'admin' || rol === 'master') {
+                return next();
+            }
             
             if (!permisos || !permisos[recurso] || !permisos[recurso].includes(accion)) {
                 return res.status(403).json({
