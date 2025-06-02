@@ -1,11 +1,505 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hesed</title>
+    <title>Hesed - Tienda de Ropa</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #60b9cf;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #60b9cf;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border-radius: 25px;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            background: #60b9cf;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #4a94a8;
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: #60b9cf;
+            border: 2px solid #60b9cf;
+        }
+
+        .btn.secondary:hover {
+            background: #60b9cf;
+            color: white;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #60b9cf, #4a94a8);
+            color: white;
+            padding: 4rem 5%;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Categories */
+        .categories {
+            padding: 4rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .category-icon {
+            font-size: 3rem;
+            color: #60b9cf;
+            margin-bottom: 1rem;
+        }
+
+        .category-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Products */
+        .products {
+            padding: 4rem 5%;
+            background: white;
+        }
+
+        .products-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            height: 250px;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #999;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #60b9cf;
+            margin-bottom: 1rem;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-add-cart {
+            flex: 1;
+            padding: 0.8rem;
+            background: #60b9cf;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn-add-cart:hover {
+            background: #4a94a8;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        /* Error */
+        .error {
+            text-align: center;
+            padding: 2rem;
+            color: #e74c3c;
+            background: #fdf2f2;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        /* Footer */
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 5%;
+            margin-top: 4rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .category-grid,
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Bienvenido</h1>
-</body>
-</html>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="logo">Hesed</div>
+            
+            <ul class="nav-links">
+                <li><a href="#home">Inicio</a></li>
+                <li><a href="#categories">Categorías</a></li>
+                <li><a href="#products">Productos</a></li>
+                <li><a href="#contact">Contacto</a></li>
+            </ul>
+            
+            <div class="user-menu" id="userMenu">
+                <!-- Se llenará dinámicamente con JavaScript -->
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <h1>Bienvenido a Hesed</h1>
+        <p>Descubre las mejores prendas de vestir con estilo y calidad excepcional. Encuentra todo lo que necesitas para lucir elegante en cada ocasión.</p>
+        <a href="#products" class="btn">Ver Productos</a>
+    </section>
+
+    <!-- Categories -->
+    <section class="categories" id="categories">
+        <h2 class="section-title">Nuestras Categorías</h2>
+        <div class="category-grid" id="categoryGrid">
+            <!-- Se llenará dinámicamente -->
+        </div>
+    </section>
+
+    <!-- Products -->
+    <section class="products" id="products">
+        <div class="products-container">
+            <h2 class="section-title">Productos Destacados</h2>
+            <div class="products-grid" id="productsGrid">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Hesed. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        // Configuración de la API
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Estado de la aplicación
+        let usuario = null;
+        let categorias = [];
+        let productos = [];
+
+        // Inicializar aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            verificarAutenticacion();
+            cargarCategorias();
+            cargarProductos();
+        });
+
+        // Verificar autenticación
+        function verificarAutenticacion() {
+            const token = localStorage.getItem('token');
+            const usuarioData = localStorage.getItem('usuario');
+            
+            if (token && usuarioData) {
+                try {
+                    usuario = JSON.parse(usuarioData);
+                    mostrarMenuUsuario();
+                } catch (error) {
+                    console.error('Error parsing usuario data:', error);
+                    mostrarMenuInvitado();
+                }
+            } else {
+                mostrarMenuInvitado();
+            }
+        }
+
+        // Mostrar menú para usuario logueado
+        function mostrarMenuUsuario() {
+            const userMenu = document.getElementById('userMenu');
+            userMenu.innerHTML = `
+                <div class="user-info">
+                    <i class='bx bxs-user'></i>
+                    <span>${usuario.nombre}</span>
+                </div>
+                <button class="btn secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+            `;
+        }
+
+        // Mostrar menú para invitado
+        function mostrarMenuInvitado() {
+            const userMenu = document.getElementById('userMenu');
+            userMenu.innerHTML = `
+                <a href="/login.html" class="btn secondary">Iniciar Sesión</a>
+                <a href="/login.html" class="btn">Registrarse</a>
+            `;
+        }
+
+        // Cerrar sesión
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            window.location.href = '/login.html';
+        }
+
+        // Cargar categorías
+        async function cargarCategorias() {
+            try {
+                // Datos de categorías basados en tu base de datos
+                categorias = [
+                    { id: 1, nombre: 'Abrigos', descripcion: 'Abrigos de paño, para el invierno', icon: 'bx-jacket' },
+                    { id: 2, nombre: 'Chompas', descripcion: 'Chompas de lana', icon: 'bx-sweater' },
+                    { id: 3, nombre: 'Pantalones', descripcion: 'Pantalones sastreros', icon: 'bx-pants' },
+                    { id: 4, nombre: 'Zapatos', descripcion: 'Zapatos formales', icon: 'bx-shoe' }
+                ];
+                
+                mostrarCategorias();
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+                mostrarError('Error cargando categorías', 'categoryGrid');
+            }
+        }
+
+        // Mostrar categorías
+        function mostrarCategorias() {
+            const categoryGrid = document.getElementById('categoryGrid');
+            
+            categoryGrid.innerHTML = categorias.map(categoria => `
+                <div class="category-card" onclick="filtrarPorCategoria(${categoria.id})">
+                    <div class="category-icon">
+                        <i class='bx ${categoria.icon || 'bx-package'}'></i>
+                    </div>
+                    <h3>${categoria.nombre}</h3>
+                    <p>${categoria.descripcion}</p>
+                </div>
+            `).join('');
+        }
+
+        // Cargar productos
+        async function cargarProductos() {
+            const productsGrid = document.getElementById('productsGrid');
+            productsGrid.innerHTML = '<div class="loading">Cargando productos...</div>';
+            
+            try {
+                // Productos de ejemplo basados en tu base de datos
+                productos = [
+                    {
+                        id: 1,
+                        nombre: "Abrigo G' major By Parkland - Plomo Oscuro XL",
+                        precio: 299.90,
+                        stock: 15,
+                        categoria_id: 1,
+                        imagen_principal: 'uploads/productos/abrigo_gmajor_plomo_xl.jpg'
+                    },
+                    {
+                        id: 2,
+                        nombre: "Camisa Formal Blanca Slim Fit - Talla L",
+                        precio: 89.90,
+                        stock: 25,
+                        categoria_id: 2,
+                        imagen_principal: 'uploads/productos/camisa_formal_blanca_l.jpg'
+                    },
+                    {
+                        id: 3,
+                        nombre: "Jean Azul Clásico Corte Recto - Talla 32",
+                        precio: 129.90,
+                        stock: 20,
+                        categoria_id: 3,
+                        imagen_principal: 'uploads/productos/jean_azul_clasico_32.jpg'
+                    },
+                    {
+                        id: 4,
+                        nombre: "Polo Deportivo Dry-Fit Negro - Talla M",
+                        precio: 45.90,
+                        stock: 30,
+                        categoria_id: 4,
+                        imagen_principal: 'uploads/productos/polo_deportivo_negro_m.jpg'
+                    },
+                    {
+                        id: 5,
+                        nombre: "Casaca de Cuero Marrón Vintage - Talla L",
+                        precio: 499.90,
+                        stock: 8,
+                        categoria_id: 1,
+                        imagen_principal: 'uploads/productos/casaca_cuero_marron_l.jpg'
+                    }
+                ];
+                
+                mostrarProductos(productos);
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+                mostrarError('Error cargando productos', 'productsGrid');
+            }
+        }
